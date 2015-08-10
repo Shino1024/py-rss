@@ -1,5 +1,5 @@
 import urllib as ul
-import xml.etree.ElementTree as ETree
+from xml.dom import minidom
 from gi.repository import Gtk
 
 class MainWindow():
@@ -7,6 +7,8 @@ class MainWindow():
 		self.initialize()
 
 	def initialize(self):
+		self.doc = None
+
 		self.window = Gtk.Window()
 		self.window.connect("destroy", Gtk.main_quit)
 
@@ -26,10 +28,22 @@ class MainWindow():
 		self.window.set_default_size(400, 400)
 		self.window.set_resizable(False)
 
-		self.rssdoc = ETree.ElementTree()
-
-		self.urlobj = None
+		self.window.show_all()
 
 	def parserequest(self, button):
-		self.address = self.addressbar.get_text()
-		self.request = urllib.open(self.address)
+		address = self.addressbar.get_text()
+		request = urllib2.Request(address)
+		try:
+			data = urllib2.urlopen(request)
+		except URLError as e:
+			if e.reason[0] == 4:
+				Gtk.MessageDialog(type=Gtk.MESSAGE_ERROR, buttons=Gtk.BUTTONS_OK).set_markup("Can't reach the server.").run()
+			else:
+				Gtk.MessageDialog(type=Gtk.MESSAGE_ERROR, buttons=Gtk.BUTTONS_OK).set_markup(e.reason[1]).run()
+		doc = minidom.parseString(data)
+		root = doc.childNodes
+		datatable = []
+		tags = ["title", "description", "link", "pubDate", "image", "generator", "copyright", "lastBuildDate", "language"]
+		for node in tags:
+			temp = doc.getElementsByTagName(node)
+			
