@@ -7,35 +7,39 @@ class MainWindow():
 		self.initialize()
 
 	def initialize(self):
-		self.doc = None
+		self.resultsTitle = []
+		self.resultsItems = []
 
-		self.window = Gtk.Window()
-		self.window.connect("destroy", Gtk.main_quit)
+		self.mainWindow = Gtk.Window()
+		self.mainWindow.connect("destroy", Gtk.main_quit)
 
-		self.addressbar = Gtk.Entry()
-		self.addressbar.set_input_purpose(Gtk.InputPurpose.URL)
-		self.searchbutton = Gtk.Button()
-		self.searchbutton.set_text("Search")
-		self.searchbutton.connect("clicked", self.parserequest)
+		self.addressBar = Gtk.Entry()
+		self.addressBar.set_input_purpose(Gtk.InputPurpose.URL)
+		self.searchButton = Gtk.Button()
+		self.searchButton.set_text("Search")
+		self.seatchButton.set_size_request(40, 30)
+		self.searchButton.connect("clicked", self.parseRequest)
 		self.results = Gtk.ListBox()
 
-		self.maingrid = Gtk.Grid()
-		self.maingrid.attach(self.addressbar, 0, 0, 1, 1)
-		self.maingrid.attach(self.searchbutton, 1, 0, 1, 1)
-		self.maingrid.attach(self.results, 0, 1, 1, 1)
+		self.mainGrid = Gtk.Grid()
+		self.mainGrid.attach(self.addressBar, 0, 0, 1, 1)
+		self.mainGrid.attach(self.searchButton, 1, 0, 1, 1)
+		self.mainGrid.attach(self.results, 0, 1, 1, 1)
 
-		self.window.add(self.maingrid)
-		self.window.set_default_size(400, 400)
-		self.window.set_resizable(False)
+		self.mainWindow.add(self.mainGrid)
+		self.mainWindow.set_default_size(400, 400)
+		self.mainWindow.set_resizable(False)
 
-		self.window.show_all()
+		self.mainWindow.show_all()
 
 	def parserequest(self, button):
-		address = self.addressbar.get_text()
+		button.set_text("Parsing...")
+		address = self.addressBar.get_text()
 		request = urllib2.Request(address)
 		try:
 			data = urllib2.urlopen(request)
 		except URLError as e:
+			button.set_text("Error!")
 			if e.reason[0] == 4:
 				Gtk.MessageDialog(type=Gtk.MESSAGE_ERROR, buttons=Gtk.BUTTONS_OK).set_markup("Can't reach the server.").run()
 			else:
@@ -46,4 +50,27 @@ class MainWindow():
 		tags = ["title", "description", "link", "pubDate", "image", "generator", "copyright", "lastBuildDate", "language"]
 		for node in tags:
 			temp = doc.getElementsByTagName(node)
-			
+			if len(temp) == 0:
+				self.resultsTitle.append(None)
+				continue
+			for elem in temp:
+				if elem.nodeType == elem.TEXT_NODE and elem.parentNode.nodeName == "channel":
+					self.resultsTitle.append(elem.firstChild.nodeValue)
+		items = doc.getElementsByTagName("item")
+#		if len(items) == 0:
+		else:
+			itemTags = ["author", "category", "comments", "description", "link", "pubDate", "title"]
+			for item in items:
+				itemData = []
+				for info in item.childNodes:
+					temp = item.getElementsByTagName(info)
+					if len(temp) == 0:
+						itemData.append(None)
+						continue
+					for elem in temp:
+						if elem.nodeType == elem.TEXT_NODE:
+							itemData.append(elem.firstChild.nodeValue)
+					self.resultsItems.append(itemData)
+		button.set_text("Search")
+
+	def represent(self):
