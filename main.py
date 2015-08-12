@@ -15,11 +15,14 @@ class MainWindow():
 
 		self.addressBar = Gtk.Entry()
 		self.addressBar.set_input_purpose(Gtk.InputPurpose.URL)
+		self.addressBar.set_width_chars(48)
 		self.searchButton = Gtk.Button()
 		self.searchButton.set_text("Search")
-		self.seatchButton.set_size_request(40, 30)
+		self.searchButton.set_size_request(40, 30)
 		self.searchButton.connect("clicked", self.parseRequest)
-		self.results = Gtk.ListBox()
+		self.results = Gtk.ScrolledWindow()
+		self.results.set_vexpand(True)
+		self.results.set_hexpand(True)
 
 		self.mainGrid = Gtk.Grid()
 		self.mainGrid.attach(self.addressBar, 0, 0, 1, 1)
@@ -27,8 +30,8 @@ class MainWindow():
 		self.mainGrid.attach(self.results, 0, 1, 1, 1)
 
 		self.mainWindow.add(self.mainGrid)
-		self.mainWindow.set_default_size(400, 400)
-		self.mainWindow.set_resizable(False)
+		self.mainWindow.set_default_size(-1, 480)
+#		self.mainWindow.set_resizable(False)
 
 		self.mainWindow.show_all()
 
@@ -57,20 +60,21 @@ class MainWindow():
 				if elem.nodeType == elem.TEXT_NODE and elem.parentNode.nodeName == "channel":
 					self.resultsTitle.append(elem.firstChild.nodeValue)
 		items = doc.getElementsByTagName("item")
-#		if len(items) == 0:
-		else:
-			itemTags = ["author", "category", "comments", "description", "link", "pubDate", "title"]
-			for item in items:
-				itemData = []
-				for info in item.childNodes:
-					temp = item.getElementsByTagName(info)
-					if len(temp) == 0:
-						itemData.append(None)
-						continue
-					for elem in temp:
-						if elem.nodeType == elem.TEXT_NODE:
-							itemData.append(elem.firstChild.nodeValue)
-					self.resultsItems.append(itemData)
+		if len(items) == 0:
+			return
+		itemTags = ["author", "category", "comments", "description", "link", "pubDate", "title"]
+		for item in items:
+			itemData = []
+			for info in item.childNodes:
+				temp = item.getElementsByTagName(info)
+				if len(temp) == 0:
+					itemData.append(None)
+					continue
+				for elem in temp:
+					if elem.nodeType == elem.TEXT_NODE:
+						itemData.append(elem.firstChild.nodeValue)
+				self.resultsItems.append(itemData)
 		button.set_text("Search")
+		fillContainer()
 
-	def represent(self):
+	def fillContainer(self):
