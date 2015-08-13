@@ -30,7 +30,7 @@ class MainWindow():
 		self.mainGrid.attach(self.results, 0, 1, 1, 1)
 
 		self.mainWindow.add(self.mainGrid)
-		self.mainWindow.set_default_size(-1, 480)
+		self.mainWindow.set_default_size(-1, -1)
 #		self.mainWindow.set_resizable(False)
 
 		self.mainWindow.show_all()
