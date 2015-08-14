@@ -1,4 +1,4 @@
-import urllib as ul
+import urllib2
 from xml.dom import minidom
 from gi.repository import Gtk
 
@@ -15,19 +15,22 @@ class MainWindow():
 
 		self.addressBar = Gtk.Entry()
 		self.addressBar.set_input_purpose(Gtk.InputPurpose.URL)
-		self.addressBar.set_width_chars(48)
+		self.addressBar.set_width_chars(64)
 		self.searchButton = Gtk.Button()
 		self.searchButton.set_text("Search")
 		self.searchButton.set_size_request(40, 30)
 		self.searchButton.connect("clicked", self.parseRequest)
 		self.results = Gtk.ScrolledWindow()
+		self.layout = Gtk.Layout()
+		self.results.add(layout)
+		self.results.set_min.content_height(384)
 		self.results.set_vexpand(True)
 		self.results.set_hexpand(True)
 
 		self.mainGrid = Gtk.Grid()
 		self.mainGrid.attach(self.addressBar, 0, 0, 1, 1)
 		self.mainGrid.attach(self.searchButton, 1, 0, 1, 1)
-		self.mainGrid.attach(self.results, 0, 1, 1, 1)
+		self.mainGrid.attach(self.results, 0, 1, 2, 1)
 
 		self.mainWindow.add(self.mainGrid)
 		self.mainWindow.set_default_size(-1, -1)
