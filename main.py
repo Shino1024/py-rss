@@ -29,10 +29,16 @@ class MainWindow(Gtk.Window):
 		self.searchButton.set_text("Search")
 		self.searchButton.set_size_request(40, 30)
 		self.searchButton.connect("clicked", self.parseRequest)
+
 		self.results = Gtk.ScrolledWindow()
-		self.layout = Gtk.Layout()
+		self.titleVBox = Gtk.VBox()
+		self.titleFrame = Gtk.Frame()
+		self.titleElements = []
+		self.itemsVBox = Gtk.VBox()
+		self.itemsFrame = Gtk.Frame()
+		self.items = []
+
 		self.results.add(layout)
-		self.results.set_min.content_height(384)
 		self.results.set_vexpand(True)
 		self.results.set_hexpand(True)
 
@@ -43,7 +49,6 @@ class MainWindow(Gtk.Window):
 
 		self.add(self.mainGrid)
 		self.set_default_size(-1, -1)
-#		self.mainWindow.set_resizable(False)
 
 		self.mainWindow.show_all()
 
@@ -60,10 +65,10 @@ class MainWindow(Gtk.Window):
 				ErrorDialog(self, "Unknown host, have you mispelled it?").run()
 			else:
 				ErrorDialog(self, e.reason[1]).run()
+			return
 
 		doc = minidom.parseString(data.read())
 		root = doc.childNodes
-		datatable = []
 
 		tags = ["copyright", "description", "generator", "language", "lastBuildDate", "link", "pubDate", "title"]
 		for node in tags:
@@ -91,6 +96,10 @@ class MainWindow(Gtk.Window):
 				self.resultsItems.append(itemData)
 
 		button.set_text("Search")
-		fillContainer()
+		refillContainer()
 
-	def fillContainer(self):
+	def refillContainer(self):
+		for item in self.items:
+			self.itemsVBox.remove(item)
+		for item in self.titleElements:
+			self.titleVBox.remove(item)
