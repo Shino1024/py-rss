@@ -27,7 +27,7 @@ class MainWindow(Gtk.Window):
 		self.addressBar.set_input_purpose(Gtk.InputPurpose.URL)
 		self.addressBar.set_text("Provide the URL here...")
 		self.searchButton = Gtk.Button()
-		self.searchButton.set_text("Search")
+		self.searchButton.set_text("Parse")
 		self.searchButton.connect("clicked", self.parseRequest)
 
 		self.results = Gtk.ScrolledWindow()
@@ -52,7 +52,7 @@ class MainWindow(Gtk.Window):
 		try:
 			data = urllib2.urlopen(request)
 		except urllib2.URLError as e:
-			button.set_text("Error!")
+			button.set_text("Parse")
 			if e.reason[0] == 4:
 				ErrorDialog(self, "Unknown host, have you mispelled it?").run()
 			else:
