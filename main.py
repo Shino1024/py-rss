@@ -26,9 +26,12 @@ class MainWindow(Gtk.Window):
 		self.addressBar.set_hexpand(True)
 		self.addressBar.set_input_purpose(Gtk.InputPurpose.URL)
 		self.addressBar.set_text("Provide the URL here...")
-		self.searchButton = Gtk.Button()
-		self.searchButton.set_text("Parse")
-		self.searchButton.connect("clicked", self.parseRequest)
+
+		self.buttonBox = Gtk.VBox()
+		self.parseButton = Gtk.Button()
+		self.parseButton.set_text("Parse")
+		self.parseButton.connect("clicked", self.parseRequest)
+		self.buttonBox.pack_start(self.parseButton, False, False, False)
 
 		self.results = Gtk.ScrolledWindow()
 		self.resultsBox = Gtk.VBox()
@@ -36,7 +39,7 @@ class MainWindow(Gtk.Window):
 
 		self.mainGrid = Gtk.Grid()
 		self.mainGrid.attach(self.addressBar, 0, 0, 1, 1)
-		self.mainGrid.attach(self.searchButton, 1, 0, 1, 1)
+		self.mainGrid.attach(self.buttonBox, 1, 0, 1, 1)
 		self.mainGrid.attach(self.results, 0, 1, 2, 1)
 
 		self.add(self.mainGrid)
