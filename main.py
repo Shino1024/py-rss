@@ -1,7 +1,18 @@
 import urllib2
 from xml.dom import minidom
 from gi.repository import Gtk, Pango, Gdk
-from xml.etree import ElementTree
+from HTMLParser import HTMLParser
+
+class TagStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+
+    def handle_data(self, d):
+        self.fed.append(d)
+
+    def get_data(self):
+        return ''.join(self.fed)
 
 class ErrorDialog(Gtk.Dialog):
 	def __init__(self, parent, errorMessage):
@@ -89,7 +100,7 @@ class MainWindow(Gtk.Window):
 				continue
 			for elem in temp:
 				if elem.parentNode.nodeName == "channel":
-					self.resultsChannel.append(''.join(ElementTree.fromstring(elem.firstChild.nodeValue.replace("<br>", "\n").replace("</br>", "\n").replace("</ br>", "\n").replace("&lt;", "<").replace("&gt;", ">"))).itertext())
+					self.resultsChannel.append(elem.firstChild.nodeValue)
 
 		items = doc.getElementsByTagName("item")
 		if len(items) == 0:
@@ -103,7 +114,7 @@ class MainWindow(Gtk.Window):
 					itemData.append(":NONE")
 					continue
 				for elem in temp:
-					itemData.append(''.join(ElementTree.fromstring(elem.firstChild.nodeValue.replace("<br>", "\n").replace("</br>", "\n").replace("</ br>", "\n").replace("&lt;", "<").replace("&gt;", ">"))).itertext())
+					itemData.append(elem.firstChild.nodeValue)
 			self.resultsItems.append(itemData)
 
 		button.set_label("Parse")
@@ -113,6 +124,11 @@ class MainWindow(Gtk.Window):
 		self.resultsBox.remove(self.resultsVBox)
 		self.resultsVBox = Gtk.VBox()
 		self.resultsVBox.set_spacing(5)
+
+		for index, string in enumerate(self.resultsChannel):
+			tempParser = TagStripper()
+			tempParser.feed(string)
+			self.resultsChannel[index] = tempParser.get_data()
 
 		channelBox = Gtk.HBox()
 		channelDummyL, channelDummyR = Gtk.Label(), Gtk.Label()
@@ -162,7 +178,7 @@ class MainWindow(Gtk.Window):
 		channelDate.set_line_wrap(True)
 		channelDate.set_single_line_mode(False)
 		if self.resultsChannel[2] != ":NONE":
-			channelDate.set_text(self.resultsChannel[2])
+			channelDate.set_text("Last update: " + self.resultsChannel[2])
 		else:
 			channelDate.set_text("Unknown date")
 
@@ -201,8 +217,12 @@ class MainWindow(Gtk.Window):
 		self.resultsVBox.pack_start(channelBox, True, True, False)
 		channelBox.show()
 
-		counter = 1
-		for item in self.resultsItems:
+		for counter, item in enumerate(self.resultsItems, start=1):
+			for index, string in enumerate(item):
+				tempParser = TagStripper()
+				tempParser.feed(string)
+				item[index] = tempParser.get_data()
+
 			itemBox = Gtk.HBox()
 			itemDummyL, itemDummyR = Gtk.Label(), Gtk.Label()
 			itemBox.pack_start(itemDummyL, False, False, False)
@@ -213,7 +233,6 @@ class MainWindow(Gtk.Window):
 			itemFrame.override_background_color(Gtk.StateType.NORMAL, Gdk.RGBA(1.0, 1.0, 1.0, 1.0))
 			itemLabel = Gtk.Label()
 			itemLabel.set_markup("<i>Entry " + str(counter) + "</i>")
-			counter += 1
 			itemLabel.modify_font(Pango.FontDescription("Times New Roman 8"))
 			itemLabel.show()
 			itemFrame.set_label_align(0.01, 0.8)
@@ -331,6 +350,10 @@ class MainWindow(Gtk.Window):
 
 			self.resultsVBox.pack_start(itemBox, True, True, False)
 			itemBox.show()
+
+		resultsVBoxDummyD = Gtk.Label()
+		self.resultsVBox.pack_start(resultsVBoxDummyD, False, False, False)
+		resultsVBoxDummyD.show()
 
 		self.resultsBox.pack_start(self.resultsVBox, True, True, False)
 		self.resultsVBox.show()
